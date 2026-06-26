@@ -14,25 +14,14 @@
   <body>
     <div id="root"></div>
     <script>
-      /**
-       * Dual-mode entry point.
-       *
-       * file:// (local double-click)  → redirect to pre-built dist/index.html
-       *   dist/index.html is a self-contained single-file build (all JS+CSS
-       *   inlined) produced by vite-plugin-singlefile. It works offline with
-       *   no web server and no Node.js required.
-       *
-       * http(s):// (Vite dev server or GitHub Pages)
-       *   → Vite handles the /src/main.tsx entry point normally.
-       */
-      if (window.location.protocol === 'file:') {
+      // Allow opening the project locally via file:// by redirecting to the built single-file app.
+      if (
+        window.location.protocol === 'file:' &&
+        !window.location.pathname.endsWith('/dist/index.html')
+      ) {
         window.location.replace('./dist/index.html');
-      } else {
-        var s = document.createElement('script');
-        s.type = 'module';
-        s.src = '/src/main.tsx';
-        document.head.appendChild(s);
       }
     </script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
