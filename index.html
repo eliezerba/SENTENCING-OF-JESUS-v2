@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>גזר דינא דישו | מהדורה דיגיטלית</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      /**
+       * Dual-mode entry point.
+       *
+       * file:// (local double-click)  → redirect to pre-built dist/index.html
+       *   dist/index.html is a self-contained single-file build (all JS+CSS
+       *   inlined) produced by vite-plugin-singlefile. It works offline with
+       *   no web server and no Node.js required.
+       *
+       * http(s):// (Vite dev server or GitHub Pages)
+       *   → Vite handles the /src/main.tsx entry point normally.
+       */
+      if (window.location.protocol === 'file:') {
+        window.location.replace('./dist/index.html');
+      } else {
+        var s = document.createElement('script');
+        s.type = 'module';
+        s.src = '/src/main.tsx';
+        document.head.appendChild(s);
+      }
+    </script>
+  </body>
+</html>
