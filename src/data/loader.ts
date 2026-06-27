@@ -101,6 +101,7 @@ interface WitnessMetaRow {
   shelfmark?: string | null;
   dateApprox?: string | null;
   language?: Language;
+  metadata: Record<string, string>;
 }
 
 function firstNonEmpty(row: Record<string, string>, keys: string[]): string {
@@ -145,16 +146,24 @@ function loadWitnessMetadata(): Map<string, WitnessMetaRow> {
     if (!id) continue;
 
     const displayName = firstNonEmpty(row, ['display_name', 'name', 'witness_name', 'label']);
+    const fullLabel = firstNonEmpty(row, ['full_label']);
     const shelfmark = firstNonEmpty(row, ['shelfmark', 'shelf_mark', 'shelf']);
     const dateApprox = firstNonEmpty(row, ['date_approx', 'date', 'date_range', 'dating']);
     const languageRaw = firstNonEmpty(row, ['language', 'lang']);
 
+    const metadata: Record<string, string> = {};
+    for (const [key, value] of Object.entries(row)) {
+      if (!value || !value.trim()) continue;
+      metadata[key] = value.trim();
+    }
+
     metaMap.set(id, {
       id,
-      displayName: displayName || undefined,
+      displayName: displayName || fullLabel || undefined,
       shelfmark: shelfmark || null,
       dateApprox: dateApprox || null,
       language: languageRaw ? normaliseLanguage(languageRaw) : undefined,
+      metadata,
     });
   }
 
@@ -362,6 +371,7 @@ export function getEditionData(): EditionData {
         dateApprox: meta?.dateApprox ?? null,
         sectionCount: acc.sections.size,
         chapterCoverage: acc.chapters,
+        metadata: meta?.metadata ?? {},
       };
     });
 

@@ -359,6 +359,12 @@ a:hover { text-decoration: underline; }
   margin-bottom: 0.25rem;
 }
 
+.witness-card__display-name {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.35rem;
+}
+
 .witness-card__meta {
   width: 100%;
   font-size: 0.75rem;
@@ -373,6 +379,36 @@ a:hover { text-decoration: underline; }
   white-space: nowrap;
 }
 .witness-card__meta td { color: var(--color-text); }
+
+.witness-card__details {
+  margin-top: 0.6rem;
+  border-top: 1px solid var(--color-border-light);
+  padding-top: 0.45rem;
+}
+
+.witness-card__details summary {
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.witness-card__meta--full {
+  margin-top: 0.45rem;
+  table-layout: fixed;
+}
+
+.witness-card__meta--full th {
+  width: 42%;
+  vertical-align: top;
+}
+
+.witness-card__meta--full td {
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 
 .home-missing-data-note {
   background: #fffbeb;

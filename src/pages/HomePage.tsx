@@ -6,6 +6,34 @@ import { CoverageMap } from '../components/CoverageMap';
 import { WitnessSelector } from '../components/WitnessSelector';
 import type { Language } from '../data/types';
 
+const META_LABELS: Record<string, { he: string; en: string }> = {
+  witness_group: { he: 'קבוצת עד', en: 'Witness group' },
+  language_he: { he: 'שפה (עברית)', en: 'Language (Hebrew label)' },
+  full_label: { he: 'כותרת מלאה', en: 'Full label' },
+  material_format: { he: 'חומר/פורמט', en: 'Material format' },
+  dimensions_cm: { he: 'מידות (סמ)', en: 'Dimensions (cm)' },
+  lines_per_page: { he: 'שורות לעמוד', en: 'Lines per page' },
+  condition: { he: 'מצב פיזי', en: 'Condition' },
+  script_hand: { he: 'כתב יד', en: 'Script hand' },
+  vocalization: { he: 'ניקוד', en: 'Vocalization' },
+  line_fillers_quire: { he: 'מילוי שורות/קונטרס', en: 'Line fillers/quire' },
+  text_coverage: { he: 'טווח כיסוי בטקסט', en: 'Text coverage' },
+  manuscript_context: { he: 'הקשר כתה"י', en: 'Manuscript context' },
+  textual_characteristics: { he: 'מאפיינים טקסטואליים', en: 'Textual characteristics' },
+  biblical_verses_language: { he: 'שפת פסוקים', en: 'Biblical verses language' },
+  name_spellings: { he: 'כתיבי שמות', en: 'Name spellings' },
+  include_in_synopsis: { he: 'כלול בסינופסיס', en: 'Include in synopsis' },
+  bohak_intro_pages: { he: 'עמודי מבוא (בוהק)', en: 'Bohak intro pages' },
+  summary_paragraph_he: { he: 'סיכום (עברית)', en: 'Summary (Hebrew)' },
+  notes_for_digital_edition: { he: 'הערות למהדורה דיגיטלית', en: 'Digital edition notes' },
+};
+
+function labelForMetaKey(key: string, uiLang: 'he' | 'en'): string {
+  const known = META_LABELS[key];
+  if (known) return known[uiLang];
+  return key.replace(/_/g, ' ');
+}
+
 function langLabel(lang: Language, uiLang: 'he' | 'en'): string {
   const s = t(uiLang);
   switch (lang) {
@@ -23,7 +51,7 @@ export function HomePage() {
   const navigate = useNavigate();
   const [attributionOpen, setAttributionOpen] = useState(false);
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
-  const hasWitnessMetadata = data.witnesses.some((w) => w.shelfmark || w.dateApprox);
+  const hasWitnessMetadata = data.witnesses.some((w) => Object.keys(w.metadata).length > 0);
 
   function handleGoToEdition() {
     if (selectedChapterId) {
@@ -102,6 +130,9 @@ export function HomePage() {
             {data.witnesses.map((w) => (
               <div key={w.id} className={`witness-card witness-card--${w.language}`}>
                 <div className="witness-card__siglum">{w.siglum}</div>
+                {w.displayName !== w.siglum && (
+                  <div className="witness-card__display-name">{w.displayName}</div>
+                )}
                 <div className={`lang-badge lang-badge--${w.language}`}>
                   {langLabel(w.language, uiLang)}
                 </div>
@@ -121,6 +152,23 @@ export function HomePage() {
                     </tr>
                   </tbody>
                 </table>
+                {Object.keys(w.metadata).length > 0 && (
+                  <details className="witness-card__details">
+                    <summary>{uiLang === 'he' ? 'פרטים מלאים' : 'Full details'}</summary>
+                    <table className="witness-card__meta witness-card__meta--full">
+                      <tbody>
+                        {Object.entries(w.metadata)
+                          .filter(([k]) => k !== 'witness_id')
+                          .map(([k, v]) => (
+                            <tr key={k}>
+                              <th>{labelForMetaKey(k, uiLang)}</th>
+                              <td>{v}</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </details>
+                )}
               </div>
             ))}
           </div>

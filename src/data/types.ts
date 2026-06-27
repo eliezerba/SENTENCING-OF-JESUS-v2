@@ -71,6 +71,8 @@ export interface WitnessInfo {
   sectionCount: number;
   /** Set of chapter ids this witness covers */
   chapterCoverage: Set<string>;
+  /** Additional metadata loaded from gzar_dina_witnesses.csv */
+  metadata: Record<string, string>;
 }
 
 /** A chapter groups multiple TextUnits under a common theme */
