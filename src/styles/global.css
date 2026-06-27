@@ -859,7 +859,7 @@ a:hover { text-decoration: underline; }
 }
 
 .text-footnote-ref {
-  font-size: 0.68em;
+  font-size: 0.58em;
   vertical-align: super;
   line-height: 0;
   margin-inline: 0.08em;
@@ -899,6 +899,29 @@ a:hover { text-decoration: underline; }
   border-top: 1px solid var(--color-border);
   background: #fcfcfb;
   padding: 0.8rem 1rem 1rem;
+}
+
+.text-unit-card__footnotes-panel {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 0.4rem 0.6rem;
+}
+
+.text-unit-card__footnotes-summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  list-style: none;
+}
+
+.text-unit-card__footnotes-summary::-webkit-details-marker {
+  display: inline;
+}
+
+.text-unit-card__footnotes-panel[open] .text-unit-card__footnotes-summary {
+  margin-bottom: 0.55rem;
 }
 
 .text-unit-card__footnotes-title {

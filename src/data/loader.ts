@@ -28,11 +28,23 @@ import csvRaw from '../../gzar_dina_edition_base.csv?raw';
 
 // Optional metadata file (user supplied): gzar_dina_witnesses.*
 // Loaded via glob so build does not fail when the file is absent.
-const witnessMetaFiles = import.meta.glob('../../gzar_dina_witnesses*', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-}) as Record<string, string>;
+const witnessMetaFiles = {
+  ...(import.meta.glob('../../gzar_dina_witnesses*', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>),
+  ...(import.meta.glob('../../**/gzar_dina_witnesses*', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>),
+  ...(import.meta.glob('../../**/*witnesses*.csv', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>),
+};
 
 // ---------------------------------------------------------------------------
 // CSV parser (handles quoted fields with embedded newlines and commas)
@@ -100,11 +112,22 @@ function firstNonEmpty(row: Record<string, string>, keys: string[]): string {
 }
 
 function loadWitnessMetadata(): Map<string, WitnessMetaRow> {
-  const values = Object.values(witnessMetaFiles);
-  if (values.length === 0) return new Map();
+  const entries = Object.entries(witnessMetaFiles);
+  if (entries.length === 0) return new Map();
 
-  // If multiple files match, use the first one deterministically.
-  const csvText = values[0];
+  // Prefer explicit file names first, then generic witnesses files.
+  entries.sort(([a], [b]) => {
+    const score = (path: string): number => {
+      const p = path.toLowerCase();
+      if (p.includes('gzar_dina_witnesses')) return 0;
+      if (p.includes('/data/') || p.includes('\\data\\')) return 1;
+      if (p.includes('witnesses')) return 2;
+      return 3;
+    };
+    return score(a) - score(b) || a.localeCompare(b);
+  });
+
+  const csvText = entries[0][1];
   const rows = parseCsv(csvText);
   if (rows.length < 2) return new Map();
 

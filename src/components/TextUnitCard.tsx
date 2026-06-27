@@ -302,23 +302,27 @@ export function TextUnitCard({ unit, selectedWitnesses }: TextUnitCardProps) {
       </div>
       {footnoteEntries.length > 0 && (
         <footer className="text-unit-card__footnotes" aria-label={uiLang === 'he' ? 'הערות שוליים' : 'Footnotes'}>
-          <h3 className="text-unit-card__footnotes-title">{uiLang === 'he' ? 'הערות שוליים' : 'Footnotes'}</h3>
-          <ol className="text-unit-card__footnotes-list">
-            {footnoteEntries.map(([num, noteText]) => {
-              const refTarget = refTargetForFootnote.get(num);
-              return (
-                <li key={num} id={`fn-${unit.id}-${num}`} className="text-unit-card__footnote-item">
-                  <a
-                    className="text-unit-card__footnote-num"
-                    href={refTarget ? `#${refTarget}` : `#unit-${unit.id}`}
-                  >
-                    {num}
-                  </a>
-                  <p className="text-unit-card__footnote-text">{noteText}</p>
-                </li>
-              );
-            })}
-          </ol>
+          <details className="text-unit-card__footnotes-panel">
+            <summary className="text-unit-card__footnotes-summary">
+              {uiLang === 'he' ? 'הערות שוליים' : 'Footnotes'} ({footnoteEntries.length})
+            </summary>
+            <ol className="text-unit-card__footnotes-list">
+              {footnoteEntries.map(([num, noteText]) => {
+                const refTarget = refTargetForFootnote.get(num);
+                return (
+                  <li key={num} id={`fn-${unit.id}-${num}`} className="text-unit-card__footnote-item">
+                    <a
+                      className="text-unit-card__footnote-num"
+                      href={refTarget ? `#${refTarget}` : `#unit-${unit.id}`}
+                    >
+                      {num}
+                    </a>
+                    <p className="text-unit-card__footnote-text">{noteText}</p>
+                  </li>
+                );
+              })}
+            </ol>
+          </details>
         </footer>
       )}
     </article>
