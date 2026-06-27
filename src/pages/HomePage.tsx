@@ -23,6 +23,7 @@ export function HomePage() {
   const navigate = useNavigate();
   const [attributionOpen, setAttributionOpen] = useState(false);
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
+  const hasWitnessMetadata = data.witnesses.some((w) => w.shelfmark || w.dateApprox);
 
   function handleGoToEdition() {
     if (selectedChapterId) {
@@ -92,9 +93,11 @@ export function HomePage() {
         {/* ── Witness List ── */}
         <section className="home-section home-section--witnesses">
           <h2 className="home-section__heading">{s.witnessesTitle}</h2>
-          <p className="home-missing-data-note">
-            ⚠ {s.missingDataNote}
-          </p>
+          {!hasWitnessMetadata && (
+            <p className="home-missing-data-note">
+              ⚠ {s.missingDataNote}
+            </p>
+          )}
           <div className="witness-grid">
             {data.witnesses.map((w) => (
               <div key={w.id} className={`witness-card witness-card--${w.language}`}>

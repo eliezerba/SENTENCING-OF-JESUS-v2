@@ -448,10 +448,15 @@ a:hover { text-decoration: underline; }
 }
 .witness-chip:hover { border-color: var(--color-primary); opacity: 1; }
 .witness-chip--selected { opacity: 1; box-shadow: 0 0 0 2px var(--color-primary); }
+.witness-chip--available { border-style: solid; }
+.witness-chip--unavailable { opacity: 0.45; border-style: dashed; }
 .witness-chip--lang-hebrew.witness-chip--selected { border-color: var(--color-lang-hebrew); box-shadow: 0 0 0 2px var(--color-lang-hebrew); }
 .witness-chip--lang-aramaic.witness-chip--selected { border-color: var(--color-lang-aramaic); box-shadow: 0 0 0 2px var(--color-lang-aramaic); }
 .witness-chip--lang-judaeo-arabic.witness-chip--selected { border-color: var(--color-lang-aramaic); }
 .witness-chip__siglum { font-weight: 700; font-size: 0.875rem; }
+.witness-chip__status { font-size: 0.7rem; line-height: 1; }
+.witness-chip__status--available { color: #16a34a; }
+.witness-chip__status--unavailable { color: #9ca3af; }
 .witness-chip__lang { font-size: 0.65rem; color: var(--color-text-muted); }
 
 /* ── COVERAGE MAP ── */
@@ -718,6 +723,11 @@ a:hover { text-decoration: underline; }
   padding: 2rem;
 }
 
+.edition-units-stream {
+  flex: 1;
+  overflow-y: auto;
+}
+
 .edition-unit-nav {
   display: flex;
   align-items: center;
@@ -755,8 +765,7 @@ a:hover { text-decoration: underline; }
 .text-unit-card {
   border-bottom: 2px solid var(--color-border-light);
   background: var(--color-bg-card);
-  overflow-y: auto;
-  flex: 1;
+  overflow: hidden;
 }
 
 .text-unit-card__header {
@@ -840,6 +849,29 @@ a:hover { text-decoration: underline; }
   line-height: 1.8;
   color: var(--color-text);
   white-space: pre-wrap;
+  unicode-bidi: plaintext;
+}
+
+.reading-col__source span,
+.reading-col__source a,
+.reading-col__source sup {
+  unicode-bidi: isolate;
+}
+
+.text-footnote-ref {
+  font-size: 0.68em;
+  vertical-align: super;
+  line-height: 0;
+  margin-inline: 0.08em;
+}
+
+.text-footnote-ref a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.text-footnote-ref a:hover {
+  text-decoration: underline;
 }
 
 .reading-col__divider {
@@ -861,6 +893,56 @@ a:hover { text-decoration: underline; }
 .reading-col--unverified-sample {
   color: #d97706;
   margin-inline-end: 0.25rem;
+}
+
+.text-unit-card__footnotes {
+  border-top: 1px solid var(--color-border);
+  background: #fcfcfb;
+  padding: 0.8rem 1rem 1rem;
+}
+
+.text-unit-card__footnotes-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.text-unit-card__footnotes-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.text-unit-card__footnote-item {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.text-unit-card__footnote-num {
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  padding: 0.1rem 0.3rem;
+  background: var(--color-bg-card);
+}
+
+.text-unit-card__footnote-num:hover {
+  border-color: var(--color-primary);
+}
+
+.text-unit-card__footnote-text {
+  white-space: pre-wrap;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #374151;
 }
 
 /* ── COLOUR LEGEND ── */

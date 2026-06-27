@@ -9,7 +9,7 @@
  * The active unit is stored in AppContext and synced to the URL hash
  * so deep-linking works (e.g. #/edition?unit=3.5).
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { t } from '../i18n/index';
@@ -46,6 +46,7 @@ export function EditionPage() {
     useApp();
   const s = t(uiLang);
   const dir = uiLang === 'he' ? 'rtl' : 'ltr';
+  const [readingFlow, setReadingFlow] = useState<'focus' | 'continuous'>('focus');
   const [searchParams, setSearchParams] = useSearchParams();
   const readingAreaRef = useRef<HTMLDivElement>(null);
 
@@ -66,12 +67,38 @@ export function EditionPage() {
 
   // Scroll active unit into view when it changes
   useEffect(() => {
+    if (readingFlow !== 'focus') return;
     if (!activeUnitId || !readingAreaRef.current) return;
     const el = readingAreaRef.current.querySelector(`#unit-${CSS.escape(activeUnitId)}`);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [activeUnitId]);
+  }, [activeUnitId, readingFlow]);
+
+  // In continuous mode, update active unit based on the card in view.
+  useEffect(() => {
+    if (readingFlow !== 'continuous' || !readingAreaRef.current) return;
+
+    const root = readingAreaRef.current;
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('.text-unit-card[data-unit-id]'));
+    if (cards.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        const best = visible[0]?.target as HTMLElement | undefined;
+        const id = best?.dataset.unitId;
+        if (id && id !== activeUnitId) setActiveUnitId(id);
+      },
+      { root, threshold: [0.2, 0.35, 0.5, 0.7] },
+    );
+
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
+  }, [readingFlow, activeUnitId, setActiveUnitId]);
 
   const activeUnit = activeUnitId ? data.unitMap.get(activeUnitId) : null;
 
@@ -84,6 +111,11 @@ export function EditionPage() {
     { value: 'both', label: s.sourceAndTranslation },
     { value: 'translation', label: s.translationOnly },
   ];
+
+  const visibleUnits = useMemo(() => {
+    if (readingFlow === 'continuous') return data.units;
+    return activeUnit ? [activeUnit] : [];
+  }, [readingFlow, data.units, activeUnit]);
 
   return (
     <div className="edition-page" dir={dir}>
@@ -109,6 +141,23 @@ export function EditionPage() {
                 {opt.label}
               </button>
             ))}
+          </div>
+          <div className="edition-controls__mode" role="group" aria-label={uiLang === 'he' ? 'מצב קריאה' : 'Reading flow'}>
+            <span className="edition-controls__label">{uiLang === 'he' ? 'קריאה' : 'Flow'}:</span>
+            <button
+              className={`btn btn--mode ${readingFlow === 'focus' ? 'btn--mode-active' : ''}`}
+              onClick={() => setReadingFlow('focus')}
+              aria-pressed={readingFlow === 'focus'}
+            >
+              {s.focusReading}
+            </button>
+            <button
+              className={`btn btn--mode ${readingFlow === 'continuous' ? 'btn--mode-active' : ''}`}
+              onClick={() => setReadingFlow('continuous')}
+              aria-pressed={readingFlow === 'continuous'}
+            >
+              {s.continuousReading}
+            </button>
           </div>
           {activeUnit && (
             <div className="edition-controls__active-unit">
@@ -141,9 +190,12 @@ export function EditionPage() {
           <div className="edition-empty">
             <p>{uiLang === 'he' ? 'בחר עדי נוסח כדי להציג את הטקסט' : 'Select witnesses to display the text'}</p>
           </div>
-        ) : activeUnit ? (
-          /* Show active unit only (single-unit focus mode) */
-          <TextUnitCard unit={activeUnit} selectedWitnesses={selectedWitnesses} />
+        ) : visibleUnits.length > 0 ? (
+          <div className="edition-units-stream">
+            {visibleUnits.map((unit) => (
+              <TextUnitCard key={unit.id} unit={unit} selectedWitnesses={selectedWitnesses} />
+            ))}
+          </div>
         ) : (
           <div className="edition-empty">
             <p>{uiLang === 'he' ? 'בחר יחידת טקסט ממפתח הטקסט' : 'Select a text unit from the text key'}</p>
@@ -151,7 +203,7 @@ export function EditionPage() {
         )}
 
         {/* Navigation between units */}
-        {activeUnit && (
+        {activeUnit && readingFlow === 'focus' && (
           <div className="edition-unit-nav">
             {activeUnit.order > 1 && (
               <button

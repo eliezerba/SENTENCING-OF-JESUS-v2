@@ -54,6 +54,10 @@ export interface Strings {
   editorialContent: string;
   footnoteRef: string;
   unverifiedExtraction: string;
+  focusReading: string;
+  continuousReading: string;
+  witnessAvailable: string;
+  witnessUnavailable: string;
   expandAll: string;
   collapseAll: string;
 
@@ -122,6 +126,10 @@ const he: Strings = {
   editorialContent: 'תוספת עורכית (}...{)',
   footnoteRef: 'הפניה לשוליים',
   unverifiedExtraction: 'טקסט שחולץ ממקור לא מאומת',
+  focusReading: 'תצוגת מקטע בודד',
+  continuousReading: 'קריאה רציפה',
+  witnessAvailable: 'קיים במקטע',
+  witnessUnavailable: 'לא קיים במקטע',
   expandAll: 'פתח הכל',
   collapseAll: 'סגור הכל',
 
@@ -144,7 +152,7 @@ const he: Strings = {
   langUnknown: 'שפה לא ידועה',
 
   missingDataNote:
-    'שים לב: נתוני שוליים (כגון סימן ספרייה ותאריך כתב היד) אינם קיימים בקובץ הנתונים הנוכחי (data/edition/witnesses.csv ריק). יש לספקם ידנית.',
+    'שים לב: נתוני כתבי היד (כגון סימן ספרייה ותאריך כתב היד) טרם זוהו. ניתן לספקם בקובץ gzar_dina_witnesses.',
 };
 
 const en: Strings = {
@@ -188,6 +196,10 @@ const en: Strings = {
   editorialContent: 'Editorial content (}…{)',
   footnoteRef: 'Footnote reference',
   unverifiedExtraction: 'Unverified extracted text',
+  focusReading: 'Single section',
+  continuousReading: 'Continuous reading',
+  witnessAvailable: 'Available in this section',
+  witnessUnavailable: 'Not available in this section',
   expandAll: 'Expand all',
   collapseAll: 'Collapse all',
 
@@ -210,7 +222,7 @@ const en: Strings = {
   langUnknown: 'Unknown language',
 
   missingDataNote:
-    'Note: Manuscript metadata (shelfmark, date) is not available in the current data files (data/edition/witnesses.csv is empty). It must be supplied manually.',
+    'Note: Witness metadata (shelfmark, date) was not detected. You can provide it in gzar_dina_witnesses.',
 };
 
 export const translations: Record<UILanguage, Strings> = { he, en };

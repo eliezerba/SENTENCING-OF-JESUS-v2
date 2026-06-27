@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { t } from '../i18n/index';
 import type { Language } from '../data/types';
@@ -17,9 +17,16 @@ function langLabel(lang: Language, uiLang: 'he' | 'en'): string {
 }
 
 export function WitnessSelector() {
-  const { uiLang, data, selectedWitnesses, toggleWitness, setSelectedWitnesses } = useApp();
+  const { uiLang, data, selectedWitnesses, toggleWitness, setSelectedWitnesses, activeUnitId } = useApp();
   const s = t(uiLang);
   const [langFilter, setLangFilter] = useState<Language | 'all'>('all');
+
+  const availableInActiveUnit = useMemo(() => {
+    if (!activeUnitId) return new Set<string>();
+    const unit = data.unitMap.get(activeUnitId);
+    if (!unit) return new Set<string>();
+    return new Set(unit.readings.map((r) => r.witnessId));
+  }, [activeUnitId, data.unitMap]);
 
   const visibleWitnesses = data.witnesses.filter(
     (w) => langFilter === 'all' || w.language === langFilter,
@@ -60,15 +67,20 @@ export function WitnessSelector() {
       <div className="witness-selector__list">
         {visibleWitnesses.map((w) => {
           const isSelected = selectedWitnesses.includes(w.id);
+          const isAvailable = activeUnitId ? availableInActiveUnit.has(w.id) : true;
+          const availabilityLabel = isAvailable ? s.witnessAvailable : s.witnessUnavailable;
           return (
             <button
               key={w.id}
-              className={`witness-chip ${isSelected ? 'witness-chip--selected' : ''} witness-chip--lang-${w.language}`}
+              className={`witness-chip ${isSelected ? 'witness-chip--selected' : ''} ${isAvailable ? 'witness-chip--available' : 'witness-chip--unavailable'} witness-chip--lang-${w.language}`}
               onClick={() => toggleWitness(w.id)}
               aria-pressed={isSelected}
-              title={`${langLabel(w.language, uiLang)} · ${w.sectionCount} ${s.sections}`}
+              title={`${langLabel(w.language, uiLang)} · ${w.sectionCount} ${s.sections} · ${availabilityLabel}`}
             >
               <span className="witness-chip__siglum">{w.siglum}</span>
+              <span className={`witness-chip__status ${isAvailable ? 'witness-chip__status--available' : 'witness-chip__status--unavailable'}`}>
+                {isAvailable ? '●' : '○'}
+              </span>
               <span className="witness-chip__lang">{langLabel(w.language, uiLang)}</span>
             </button>
           );

@@ -26,6 +26,14 @@ import type {
 } from './types';
 import csvRaw from '../../gzar_dina_edition_base.csv?raw';
 
+// Optional metadata file (user supplied): gzar_dina_witnesses.*
+// Loaded via glob so build does not fail when the file is absent.
+const witnessMetaFiles = import.meta.glob('../../gzar_dina_witnesses*', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
 // ---------------------------------------------------------------------------
 // CSV parser (handles quoted fields with embedded newlines and commas)
 // ---------------------------------------------------------------------------
@@ -73,6 +81,61 @@ function parseCsv(text: string): string[][] {
   }
 
   return rows;
+}
+
+interface WitnessMetaRow {
+  id: string;
+  displayName?: string;
+  shelfmark?: string | null;
+  dateApprox?: string | null;
+  language?: Language;
+}
+
+function firstNonEmpty(row: Record<string, string>, keys: string[]): string {
+  for (const key of keys) {
+    const value = row[key];
+    if (value && value.trim().length > 0) return value.trim();
+  }
+  return '';
+}
+
+function loadWitnessMetadata(): Map<string, WitnessMetaRow> {
+  const values = Object.values(witnessMetaFiles);
+  if (values.length === 0) return new Map();
+
+  // If multiple files match, use the first one deterministically.
+  const csvText = values[0];
+  const rows = parseCsv(csvText);
+  if (rows.length < 2) return new Map();
+
+  const headers = rows[0].map((h) => h.trim().toLowerCase().replace(/\s+/g, '_'));
+  const metaMap = new Map<string, WitnessMetaRow>();
+
+  for (let i = 1; i < rows.length; i++) {
+    const rowArr = rows[i];
+    const row: Record<string, string> = {};
+    headers.forEach((h, idx) => {
+      row[h] = (rowArr[idx] ?? '').trim();
+    });
+
+    const id = firstNonEmpty(row, ['witness_id', 'id', 'siglum', 'witness', 'ms_id']);
+    if (!id) continue;
+
+    const displayName = firstNonEmpty(row, ['display_name', 'name', 'witness_name', 'label']);
+    const shelfmark = firstNonEmpty(row, ['shelfmark', 'shelf_mark', 'shelf']);
+    const dateApprox = firstNonEmpty(row, ['date_approx', 'date', 'date_range', 'dating']);
+    const languageRaw = firstNonEmpty(row, ['language', 'lang']);
+
+    metaMap.set(id, {
+      id,
+      displayName: displayName || undefined,
+      shelfmark: shelfmark || null,
+      dateApprox: dateApprox || null,
+      language: languageRaw ? normaliseLanguage(languageRaw) : undefined,
+    });
+  }
+
+  return metaMap;
 }
 
 // ---------------------------------------------------------------------------
@@ -137,6 +200,8 @@ let _editionData: EditionData | null = null;
 
 export function getEditionData(): EditionData {
   if (_editionData) return _editionData;
+
+  const witnessMeta = loadWitnessMetadata();
 
   const rows = parseCsv(csvRaw);
   if (rows.length < 2) throw new Error('CSV parse failed: no data rows');
@@ -263,16 +328,19 @@ export function getEditionData(): EditionData {
   // Build WitnessInfo list
   const witnesses: WitnessInfo[] = Array.from(witnessAccumulator.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([id, acc]) => ({
-      id,
-      language: acc.language,
-      siglum: id,
-      displayName: id,
-      shelfmark: null,   // Not in data — needs to be supplied by editor
-      dateApprox: null,  // Not in data — needs to be supplied by editor
-      sectionCount: acc.sections.size,
-      chapterCoverage: acc.chapters,
-    }));
+    .map(([id, acc]) => {
+      const meta = witnessMeta.get(id);
+      return {
+        id,
+        language: meta?.language ?? acc.language,
+        siglum: id,
+        displayName: meta?.displayName ?? id,
+        shelfmark: meta?.shelfmark ?? null,
+        dateApprox: meta?.dateApprox ?? null,
+        sectionCount: acc.sections.size,
+        chapterCoverage: acc.chapters,
+      };
+    });
 
   const witnessMap = new Map(witnesses.map((w) => [w.id, w]));
 
